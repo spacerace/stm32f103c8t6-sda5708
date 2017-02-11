@@ -6,6 +6,8 @@ void sda5708_reset_pulse();
 void sda5708_wrbyte(uint8_t data);
 void sda5708_wrpattern(int col, uint8_t pattern[7]);
 void sda5708_put_num(uint8_t col, uint8_t num);
+void sda5708_clr_col(uint8_t col);
+void sda5708_clr();
 
 #define SDA5708_REG_CONTROL	0xC0
 #define SDA5708_DISP_NORMALOP	0x20

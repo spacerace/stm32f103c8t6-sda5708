@@ -49,6 +49,23 @@ void sda5708_put_num(uint8_t col, uint8_t num) {
         sda5708_wrpattern(col, buffer);
 }
 
+void sda5708_clr_col(uint8_t col) {
+	int i;
+	uint8_t buffer[7];
+	for(i = 0; i < 7; i++) buffer[i] = 0;
+
+	sda5708_wrpattern(col, buffer);
+}
+
+void sda5708_clr() {
+	int i;
+	uint8_t buffer[7];
+	for(i = 0; i < 7; i++) buffer[i] = 0;
+	
+	for(i = 0; i < 8; i++) {
+		sda5708_wrpattern(i, buffer);
+	}
+}
 
 void sda5708_wrpattern(int col, uint8_t pattern[7]) {
 	int i;
