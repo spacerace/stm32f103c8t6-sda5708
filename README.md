@@ -9,7 +9,13 @@ That's why the charset only contains digits 0-9, chars 'a', ':' and a heart symb
 
 **TODO**
 - brightness control functions
-- charset
+- charset, after that:
+- output functions:
+  putc(c)			print charater to cursor position
+  set_cursor(position)		set cursor to digit 0-7
+  puts(s) 			print string, only first 8 chars will be displayed
+  puts_scroll(speed, s)		print string, at the end of line, scroll text 
+  scroll_lr_loop(s)		scroll in an endless loop a string from left to right and vv
 
 **revisions**
 - 0 - initial code
