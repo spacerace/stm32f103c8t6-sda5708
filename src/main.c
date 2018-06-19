@@ -30,7 +30,7 @@ int main(void){
 		for(i = 0; i < 8; i++) {
 			cols[i]++;
 			if(cols[i] > 12) cols[i] = 0;
-			sda5708_put_num(i, cols[i]);
+			sda5708_put_dig(i, cols[i]);
 		}
 		
 	}
