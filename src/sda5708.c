@@ -1,6 +1,7 @@
 #include "stm32f10x.h"
 #include "sda5708.h"
 
+
 static void sda5708_delay(int ticks);
 /* if you have a very very fast cpu, enable some time-eating of 50nS or more */
 static void sda5708_delay(int ticks) {
