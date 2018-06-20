@@ -50,20 +50,13 @@ void sda5708_set_cursor(int col);											// set cursor to 0-7
 void sda5708_put_char_at(uint8_t col, uint8_t c);			// put a character (ASCII)
 void sda5708_putc(uint8_t c);													// print a character
 void sda5708_puts(char *s);														// print a string
+void sda5708_set_brightness(int br);
 #define init_sda5708	sda5708_init
 
 /* registers */
 #define SDA5708_REG_CONTROL			0xC0
 #define SDA5708_DISP_NORMALOP		0x20
 #define SDA5708_CURRENT_LIMIT		0x08
-#define SDA5708_BRIGHTNESS_100	0x00
-#define SDA5708_BRIGHTNESS_53		0x01
-#define SDA5708_BRIGHTNESS_40		0x02
-#define SDA5708_BRIGHTNESS_27		0x03
-#define SDA5708_BRIGHTNESS_20		0x04
-#define SDA5708_BRIGHTNESS_13		0x05
-#define SDA5708_BRIGHTNESS_6		0x06
-#define SDA5708_BRIGHTNESS_0		0x07
 
 #define SDA5708_REG_ADDRESS			0xA0
 #define SDA5708_DIGIT0					0x00

@@ -1,7 +1,6 @@
 #include "stm32f10x.h"
 #include "sda5708.h"
 
-
 static void sda5708_delay(int ticks);
 /* if you have a very very fast cpu, enable some time-eating of 50nS or more */
 static void sda5708_delay(int ticks) {
@@ -13,7 +12,7 @@ static void sda5708_delay(int ticks) {
 /* full blown charset, takes 2k of codespace */
 static const uint8_t charset[256][8] = {
 				{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // 0x00
-				{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // 0x01
+				{ 0x00, 0x17, 0x14, 0x1f, 0x05, 0x1d, 0x00 },   // 0x01
 				{ 0x0e, 0x1f, 0x15, 0x1f, 0x15, 0x1b, 0x0e },   // 0x02
 				{ 0x0e, 0x1f, 0x15, 0x1f, 0x15, 0x11, 0x0e },   // 0x03
 				{ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 },   // 0x04
@@ -145,6 +144,9 @@ static const uint8_t charset[256][8] = {
 /* console data */
 static int cursor;
 
+/* goes from 0 to 7 */
+static int brightness;
+
 void sda5708_set_cursor(int col) {
 	if(col > 7) col = 7;
 	cursor = col;
@@ -212,14 +214,25 @@ void sda5708_clr_col(uint8_t col) {
 }
 
 void sda5708_clr(void) {
-	int i;
-	uint8_t buffer[7];
-	for(i = 0; i < 7; i++) buffer[i] = 0;
+	sda5708_wrbyte(SDA5708_REG_CONTROL | brightness);
+	sda5708_delay(1);
+	sda5708_wrbyte(SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP | brightness);
 	
-	for(i = 0; i < 8; i++) {
-		sda5708_wrpattern(i, buffer);
-	}
 	cursor = 0;
+	return;
+}
+
+void sda5708_set_brightness(int br) {
+	uint8_t ctrl_byte;
+	
+	br = ~br;
+	br &= 0x07;		// 0-7
+	brightness = br;
+	
+	ctrl_byte = SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP | brightness;
+	sda5708_wrbyte(ctrl_byte);
+	
+	return;
 }
 
 void sda5708_wrpattern(int col, uint8_t pattern[7]) {
@@ -286,4 +299,10 @@ void sda5708_init(void) {
 	sda5708_delay(1);
 	
 	cursor = 0;
+	sda5708_set_brightness(7);
+	
+	sda5708_clr();
+	
+	return;
 }
+
