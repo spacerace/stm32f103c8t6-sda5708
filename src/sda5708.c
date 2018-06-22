@@ -1,8 +1,11 @@
 #include "stm32f10x.h"
 #include "sda5708.h"
 
+/* prototypes, local used functions */
 static void sda5708_delay(int ticks);
-/* if you have a very very fast cpu, enable some time-eating of 50nS or more */
+
+/* maybe you'll need to implement a small delay on a very fast CPU.
+ *if you have a very very fast cpu, enable some time-eating of 50nS or more */
 static void sda5708_delay(int ticks) {
 	/* systick_delay(1); */
 	return;
@@ -146,8 +149,7 @@ static int cursor;
 /* goes from 0 to 7 */
 static int brightness;
 
-/* 
- *
+/* set software cursor (0 to 7)
  */
 void sda5708_set_cursor(int col) {
 	if(col > 7) col = 7;
@@ -155,9 +157,7 @@ void sda5708_set_cursor(int col) {
 	return;
 }
 
-/* 
- *
- */
+/* print a string (more than 8 chars possible, but sucks) */
 void sda5708_puts(char *s) {
 	while(*s) {
 		sda5708_putc(*s);
@@ -166,9 +166,7 @@ void sda5708_puts(char *s) {
 	return;
 }
 
-/* 
- *
- */
+/* print a single char, currently no scrolling, stucks in last col */
 void sda5708_putc(uint8_t c) {
 	sda5708_put_char_at(cursor, c);
 	cursor++;
@@ -179,44 +177,40 @@ void sda5708_putc(uint8_t c) {
 	}
 }
 
-/* 
- *
- */
+/* print a character at a specific column */
 void sda5708_put_char_at(uint8_t col, uint8_t c) {
 	uint8_t buffer[7];
 	uint8_t i;
-	
+
 	/* copy character data to buffer */
 	for(i = 0; i < 7; i++) {
 		buffer[i] = charset[c][i];
 	}
-	
+
 	/* send buffer to display */
 	sda5708_wrpattern(col, buffer);
-	
+
 	return;
 }
 
-/* 
- *
- */
+/* put a digint from an uint8_t on display, digit is taken from charset */
 void sda5708_put_dig(uint8_t col, uint8_t num) {
         uint8_t buffer[7];
         uint8_t i;
-				uint8_t pos_in_charset;
-				
-				if(num > 9) num = 9;				// check args
-				
-				/* copy character data to buffer */
-				pos_in_charset = num + 0x30;
+	uint8_t pos_in_charset;
+
+	if(num > 9) num = 9; // check args
+
+	/* copy character data to buffer */
+	pos_in_charset = num + 0x30;
         for(i = 0; i < 7; i++) {
                 buffer[i] = charset[pos_in_charset][i];
         }
-				
-				/* send buffer to display */
-        sda5708_wrpattern(col, buffer);
-				
-				return;
+
+	/* send buffer to display */
+	sda5708_wrpattern(col, buffer);
+
+	return;
 }
 
 /* clears a single col by sending 7 empty bytes, in fact, we write a 'space' */
@@ -235,24 +229,24 @@ void sda5708_clr(void) {
 	sda5708_wrbyte(SDA5708_REG_CONTROL | brightness);
 	sda5708_delay(1);
 	sda5708_wrbyte(SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP | brightness);
-	
+
 	cursor = 0;
 	return;
 }
 
-/* 
+/*
  *
  */
 void sda5708_set_brightness(int br) {
 	uint8_t ctrl_byte;
-	
+
 	br = ~br;
 	br &= 0x07;		// 0-7
 	brightness = br;
-	
+
 	ctrl_byte = SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP | brightness;
 	sda5708_wrbyte(ctrl_byte);
-	
+
 	return;
 }
 
@@ -264,17 +258,17 @@ int sda5708_get_brightness(void) {
 }
 
 
-/* 
+/*
  *
  */
 void sda5708_wrpattern(int col, uint8_t pattern[7]) {
 	int i;
 	uint8_t data;
-	
+
 	col &= 0x07;
-	
+
 	sda5708_wrbyte(SDA5708_REG_ADDRESS | col);
-	
+
 	for(i = 0; i < 7; i++) {
 		data = pattern[i];
 		data &= 0x1F;
@@ -282,21 +276,20 @@ void sda5708_wrpattern(int col, uint8_t pattern[7]) {
 	}
 }
 
-/* 
+/*
  *
  */
 void sda5708_wrbyte(uint8_t data) {
-  int i;      
+  int i;
   SDA5708_LOAD_L();
 	sda5708_delay(1);
-	
 	for (i=0; i <= 7; i++) {
-		if ((data>>i)&1) { 
-			SDA5708_DATA_H(); 
-		}	else { 
-			SDA5708_DATA_L(); 
+		if ((data>>i)&1) {
+			SDA5708_DATA_H();
+		}	else {
+			SDA5708_DATA_L();
 		}
-		
+
 		sda5708_delay(1);
 		SDA5708_CLOCK_H();
 		SDA5708_CLOCK_L();
@@ -304,7 +297,7 @@ void sda5708_wrbyte(uint8_t data) {
   SDA5708_LOAD_H();
 }
 
-/* 
+/*
  *
  */
 void sda5708_reset_pulse(void) {
@@ -313,37 +306,37 @@ void sda5708_reset_pulse(void) {
 	SDA5708_RESET_H();
 }
 
-/* 
+/*
  *
  */
 void sda5708_init(void) {
 	GPIO_InitTypeDef GPIO_InitStructure;
-	
+
 	RCC_APB2PeriphClockCmd(RCC_APB2Periph_GPIOA, ENABLE);
-	
+
 	GPIO_InitStructure.GPIO_Pin = SDA5708_PIN_CLOCK | SDA5708_PIN_DATA | SDA5708_PIN_LOAD | SDA5708_PIN_RESET;
 	GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
 	GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
 	GPIO_Init(GPIOA, &GPIO_InitStructure);
-	
+
 	// default pin states
 	SDA5708_RESET_H();
 	SDA5708_LOAD_H();
 	SDA5708_DATA_L();
 	SDA5708_CLOCK_H();
-	
+
 	sda5708_delay(1);
 	sda5708_reset_pulse();
 	sda5708_delay(1);
-	
-	sda5708_wrbyte(SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP);	
+
+	sda5708_wrbyte(SDA5708_REG_CONTROL | SDA5708_DISP_NORMALOP);
 	sda5708_delay(1);
-	
+
 	cursor = 0;
 	sda5708_set_brightness(7);
-	
+
 	sda5708_clr();
-	
+
 	return;
 }
 
