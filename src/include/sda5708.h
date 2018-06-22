@@ -3,7 +3,7 @@
 
 #include "stm32f10x.h"
 
-/* Make it portable, only 4 IO pins must be defined +
+/* In order to make it portable, only 4 IO pins must be defined +
  * some functions to control pins:
  *  SDA5708_RESET_H()
  *  SDA5708_RESET_L()
@@ -38,11 +38,8 @@
 #define SDA5708_CLOCK_L()		GPIO_ResetBits(SDA5708_PORT, SDA5708_PIN_CLOCK);
 #define SDA5708_LOAD_L()		GPIO_ResetBits(SDA5708_PORT, SDA5708_PIN_LOAD);
 
-/* prototypes */
+/* prototypes, functions for user */
 void sda5708_init(void);															// init display
-void sda5708_reset_pulse(void);												// reset display
-void sda5708_wrbyte(uint8_t data);										// send one byte with soft SPI
-void sda5708_wrpattern(int col, uint8_t pattern[7]);	// send one character
 void sda5708_put_dig(uint8_t col, uint8_t num);				// put a digit (0-9)
 void sda5708_clr_col(uint8_t col);										// clear a digit
 void sda5708_clr(void);																// clear whole display
@@ -50,10 +47,16 @@ void sda5708_set_cursor(int col);											// set cursor to 0-7
 void sda5708_put_char_at(uint8_t col, uint8_t c);			// put a character (ASCII)
 void sda5708_putc(uint8_t c);													// print a character
 void sda5708_puts(char *s);														// print a string
-void sda5708_set_brightness(int br);
+void sda5708_set_brightness(int br);									// set brightness from 0 to 7	
+int sda5708_get_brightness(void);											// get brightness
+
+/* prototypes, internal used functions */
+void sda5708_reset_pulse(void);												// reset display
+void sda5708_wrbyte(uint8_t data);										// send one byte with soft SPI
+void sda5708_wrpattern(int col, uint8_t pattern[7]);	// send one character
 #define init_sda5708	sda5708_init
 
-/* registers */
+/* register definitions */
 #define SDA5708_REG_CONTROL			0xC0
 #define SDA5708_DISP_NORMALOP		0x20
 #define SDA5708_CURRENT_LIMIT		0x08
